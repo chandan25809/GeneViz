@@ -1,0 +1,55 @@
+name: berry
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: geneviz-db
+    environment:
+      POSTGRES_DB: geneviz_db
+      POSTGRES_USER: geneviz
+      POSTGRES_PASSWORD: geneviz
+    ports:
+      - "5432:5432"           # optional to reach from host tools
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./geneviz-backend
+      dockerfile: Dockerfile
+    container_name: geneviz-backend
+    depends_on:
+      - db
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      DB_NAME: geneviz_db
+      DB_USER: geneviz
+      DB_PASSWORD: geneviz
+      DB_HOST: db             # <-- service name
+      DB_PORT: "5432"
+      SECRET_KEY: "dev-only-secret"   # move out later
+      ALLOWED_HOSTS: "localhost,127.0.0.1"
+      CORS_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173"
+    ports:
+      - "8000:8000"
+    volumes:
+      - /Users/chandanabhishek/projects/berry/geneviz-backend:/app
+
+  frontend:
+    build:
+      context: ./geneviz-frontend
+      dockerfile: Dockerfile
+    container_name: geneviz-frontend
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      VITE_API_BASE: http://localhost:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - /Users/chandanabhishek/projects/berry/geneviz-frontend:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:

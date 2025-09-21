@@ -1,0 +1,4 @@
+html, body, #root { height: 100%; background: #f7f9fc; margin: 0; }
+* { box-sizing: border-box; }
+.ant-typography { white-space: normal; word-break: break-word; }
+.container { margin: 0 auto; max-width: 1200px; padding: 24px; }
